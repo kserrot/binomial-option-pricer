@@ -1,6 +1,8 @@
 """Tests for the binomial option pricer."""
 
 from src.binomial import (
+    build_option_value_tree,
+    build_stock_price_tree,
     price_american_option_binomial,
     price_european_option_binomial,
     price_option_binomial,
@@ -108,3 +110,40 @@ def test_invalid_option_type_raises_error():
         )
     except ValueError as error:
         assert "Option type" in str(error)
+
+def test_stock_price_tree_shape():
+    """Test stock tree has expected shape."""
+
+    # Build tree
+    tree = build_stock_price_tree(
+        stock_price=100,
+        time_to_maturity=1,
+        volatility=0.20,
+        steps=3,
+    )
+
+    # Check shape
+    assert len(tree) == 4
+    assert len(tree[0]) == 4
+    assert tree[0][0] == 100
+
+
+def test_option_value_tree_shape():
+    """Test option value tree has expected shape."""
+
+    # Build tree
+    tree = build_option_value_tree(
+        stock_price=100,
+        strike_price=100,
+        time_to_maturity=1,
+        risk_free_rate=0.05,
+        volatility=0.20,
+        steps=3,
+        option_type="call",
+        exercise_style="european",
+    )
+
+    # Check shape
+    assert len(tree) == 4
+    assert len(tree[0]) == 4
+    assert tree[0][0] > 0

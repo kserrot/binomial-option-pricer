@@ -3,7 +3,7 @@
 import pandas as pd
 import streamlit as st
 
-from src.binomial import price_option_binomial
+from src.binomial import build_option_value_tree, build_stock_price_tree, price_option_binomial
 from src.black_scholes import call_price, put_price
 from src.plots import build_convergence_data, create_convergence_plot
 from src.utils import format_currency, format_percent
@@ -116,6 +116,44 @@ try:
         st.write("**Risk-Free Rate:**", format_percent(risk_free_rate))
         st.write("**Volatility:**", format_percent(volatility))
 
+    # Small tree preview
+    st.subheader("Binomial Tree Preview")
+
+    if steps <= 5:
+        stock_tree = build_stock_price_tree(
+            stock_price=stock_price,
+            time_to_maturity=time_to_maturity,
+            volatility=volatility,
+            steps=steps,
+        )
+
+        option_tree = build_option_value_tree(
+            stock_price=stock_price,
+            strike_price=strike_price,
+            time_to_maturity=time_to_maturity,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            steps=steps,
+            option_type=option_type,
+            exercise_style=exercise_style,
+        )
+
+        tree_col1, tree_col2 = st.columns(2)
+
+        with tree_col1:
+            st.write("**Stock Price Tree**")
+            st.dataframe(pd.DataFrame(stock_tree), width="stretch")
+
+        with tree_col2:
+            st.write("**Option Value Tree**")
+            st.dataframe(pd.DataFrame(option_tree), width="stretch")
+    else:
+        st.info(
+            "Tree preview is shown only when the number of steps is 5 or less. "
+            "Lower the steps in the sidebar to view the tree."
+        )
+
+
     # European benchmark
     if exercise_style == "european":
         st.subheader("Black-Scholes Comparison")
@@ -171,7 +209,7 @@ try:
 
         # Show data
         with st.expander("View convergence data"):
-            st.dataframe(convergence_df, use_container_width=True)
+            st.dataframe(convergence_df, width="stretch")
 
     # American note
     else:
