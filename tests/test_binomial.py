@@ -147,3 +147,32 @@ def test_option_value_tree_shape():
     assert len(tree) == 4
     assert len(tree[0]) == 4
     assert tree[0][0] > 0
+
+
+def test_american_put_early_exercise_premium_is_non_negative():
+    """Test American put premium is non-negative."""
+
+    # European put
+    european_price = price_european_option_binomial(
+        stock_price=100,
+        strike_price=100,
+        time_to_maturity=1,
+        risk_free_rate=0.05,
+        volatility=0.20,
+        steps=100,
+        option_type="put",
+    )
+
+    # American put
+    american_price = price_american_option_binomial(
+        stock_price=100,
+        strike_price=100,
+        time_to_maturity=1,
+        risk_free_rate=0.05,
+        volatility=0.20,
+        steps=100,
+        option_type="put",
+    )
+
+    # Check premium
+    assert american_price - european_price >= 0

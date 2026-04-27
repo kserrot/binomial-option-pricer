@@ -169,25 +169,6 @@ Exercise Style: european
 With these inputs, the European call price from the binomial model should be close to the Black-Scholes price.
 
 
-## Current Status
-
-Completed:
-
-- Core binomial pricing engine
-- European and American option support
-- Black-Scholes comparison
-- Convergence chart
-- Small binomial tree preview
-- Automated tests
-- Streamlit interface
-
-Planned improvements:
-
-- Add screenshots to the README
-- Add downloadable convergence results
-- Improve chart styling
-- Add more advanced sensitivity analysis
-
 ## Author
 
 Kaique Torres

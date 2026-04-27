@@ -3,7 +3,13 @@
 import pandas as pd
 import streamlit as st
 
-from src.binomial import build_option_value_tree, build_stock_price_tree, price_option_binomial
+from src.binomial import (
+    build_option_value_tree,
+    build_stock_price_tree,
+    price_american_option_binomial,
+    price_european_option_binomial,
+    price_option_binomial,
+)
 from src.black_scholes import call_price, put_price
 from src.plots import build_convergence_data, create_convergence_plot
 from src.utils import format_currency, format_percent
@@ -205,11 +211,20 @@ try:
         # Show chart
         convergence_df = pd.DataFrame(convergence_data)
         convergence_fig = create_convergence_plot(convergence_data)
-        st.pyplot(convergence_fig)
+        st.pyplot(convergence_fig, clear_figure=True)
 
         # Show data
         with st.expander("View convergence data"):
             st.dataframe(convergence_df, width="stretch")
+
+        # Download data
+        csv_data = convergence_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download convergence data as CSV",
+            data=csv_data,
+            file_name="binomial_convergence_data.csv",
+            mime="text/csv",
+        )
 
     # American note
     else:
@@ -217,6 +232,51 @@ try:
             "Black-Scholes comparison is shown only for European options. "
             "American options may allow early exercise, so they do not use "
             "the same closed-form benchmark."
+        )
+
+    # Early exercise comparison
+    if option_type == "put":
+        st.subheader("Early Exercise Comparison")
+
+        european_put_price = price_european_option_binomial(
+            stock_price=stock_price,
+            strike_price=strike_price,
+            time_to_maturity=time_to_maturity,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            steps=steps,
+            option_type="put",
+        )
+
+        american_put_price = price_american_option_binomial(
+            stock_price=stock_price,
+            strike_price=strike_price,
+            time_to_maturity=time_to_maturity,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            steps=steps,
+            option_type="put",
+        )
+
+        early_exercise_premium = american_put_price - european_put_price
+
+        early_col1, early_col2, early_col3 = st.columns(3)
+
+        with early_col1:
+            st.metric("European Put", format_currency(european_put_price))
+
+        with early_col2:
+            st.metric("American Put", format_currency(american_put_price))
+
+        with early_col3:
+            st.metric(
+                "Early Exercise Premium",
+                format_currency(early_exercise_premium),
+            )
+
+        st.write(
+            "American puts can be worth more than European puts because the "
+            "holder may exercise early when it is optimal."
         )
 
     # Explanation section
